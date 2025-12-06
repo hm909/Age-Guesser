@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Age Estimator</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f4f4f4;
+    }
+
+    .card {
+        background: white;
+        width: 380px;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .input-row {
+        display: flex;
+        border: 1px solid #d0d0d0;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #fafafa;
+    }
+
+    .input-row input {
+        flex: 1;
+        padding: 10px 12px;
+        border: none;
+        outline: none;
+        font-size: 16px;
+        background: transparent;
+    }
+
+    input::placeholder {
+        color: #b3b3b3;
+    }
+
+    button {
+        padding: 8px 18px;
+        border: none;
+        background: #2c6bed;
+        color: white;
+        font-size: 15px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    /* Go button inside the input row */
+    .input-row button {
+        margin: 0;
+        border-radius: 0;
+    }
+
+    /* Retry button spacing */
+    #retryBtn {
+        margin-top: 15px;
+    }
+
+    button:active {
+        opacity: 0.8;
+    }
+
+    .screen { display: none; }
+    .active { display: block; }
+
+    .loading-ring {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #ddd;
+        border-top-color: #2c6bed;
+        border-radius: 50%;
+        margin: 25px auto;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    #resultAge {
+        font-size: 26px;
+        font-weight: bold;
+        margin: 15px 0;
+    }
+
+    /* Confetti */
+    .confetti {
+        position: fixed;
+        top: -10px;
+        width: 10px;
+        height: 14px;
+        opacity: 0.9;
+        position: absolute;
+        animation: fall 2s linear forwards;
+    }
+
+    @keyframes fall {
+        to { transform: translateY(110vh) rotate(360deg); }
+    }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+    <!-- Start Screen -->
+    <div id="start" class="screen active">
+        <h1>Age Estimator</h1>
+
+        <div class="input-row">
+            <input
+                id="ageInput"
+                type="number"
+                min="1"
+                max="99"
+                placeholder="Type your age"
+            >
+            <button id="goBtn">Go</button>
+        </div>
+
+        <p id="error" style="color: red; margin-top: 10px; height: 18px;"></p>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loading" class="screen">
+        <div class="loading-ring"></div>
+        <p>Estimating age...</p>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="result" class="screen">
+        <p>Your age:</p>
+        <div id="resultAge">0</div>
+
+        <button id="retryBtn">Try Again!</button>
+    </div>
+
+</div>
+
+<script>
+    const start = document.getElementById("start");
+    const loading = document.getElementById("loading");
+    const result = document.getElementById("result");
+
+    const ageInput = document.getElementById("ageInput");
+    const goBtn = document.getElementById("goBtn");
+    const retryBtn = document.getElementById("retryBtn");
+    const error = document.getElementById("error");
+    const resultAge = document.getElementById("resultAge");
+
+    function switchScreen(screen) {
+        start.classList.remove("active");
+        loading.classList.remove("active");
+        result.classList.remove("active");
+        screen.classList.add("active");
+    }
+
+    // Confetti
+    function confettiEffect() {
+        for (let i = 0; i < 80; i++) {
+            let confetti = document.createElement("div");
+            confetti.classList.add("confetti");
+
+            confetti.style.left = Math.random() * 100 + "vw";
+            confetti.style.background = `hsl(${Math.random() * 360}, 80%, 60%)`;
+            confetti.style.animationDuration = (1.8 + Math.random()).toFixed(2) + "s";
+
+            document.body.appendChild(confetti);
+
+            setTimeout(() => confetti.remove(), 2500);
+        }
+    }
+
+    // Restrict strictly to 1–99
+    ageInput.addEventListener("input", () => {
+        let v = ageInput.value.replace(/\D/g, "");
+        if (v.length > 2) v = v.slice(0, 2);
+        ageInput.value = v;
+    });
+
+    function run() {
+        const rawVal = ageInput.value.trim();
+        const val = Number(rawVal);
+        error.textContent = "";
+
+        if (!rawVal || !Number.isFinite(val) || val < 1 || val > 99) {
+            error.textContent = "Enter a valid age between 1 and 99.";
+            return;
+        }
+
+        switchScreen(loading);
+
+        // Extended loading: 4 seconds
+        setTimeout(() => {
+            resultAge.textContent = val;
+            switchScreen(result);
+            confettiEffect();
+        }, 4000);
+    }
+
+    goBtn.addEventListener("click", run);
+    ageInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") run();
+    });
+
+    retryBtn.addEventListener("click", () => {
+        ageInput.value = "";
+        error.textContent = "";
+        switchScreen(start);
+    });
+</script>
+
+</body>
+</html>
